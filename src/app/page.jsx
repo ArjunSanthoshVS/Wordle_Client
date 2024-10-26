@@ -31,7 +31,7 @@ export default function Home() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [currentGuess]);
+  }, [currentGuess, handleEnter, handleKeyPress, handleDelete]);
 
   const handleKeyPress = (letter) => {
     if (currentGuess.length < 5) {

@@ -1,4 +1,3 @@
-import Logo from "../app/favicon.ico"
 export default function Navbar() {
     return (
         <>

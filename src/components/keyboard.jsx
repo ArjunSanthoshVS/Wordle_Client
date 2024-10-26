@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 const Keyboard = ({ onKeyPress, onEnter, onDelete }) => {
   const firstRow = 'QWERTYUIOP';
@@ -48,7 +49,7 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete }) => {
           </button>
         ))}
         <button onClick={onDelete} className="w-20 h-10 bg-gray-700 text-white rounded">
-          <img src="/images/backspace.png" alt="Enter key" className="h-full w-full p-2 object-contain" />
+          <Image src="/images/backspace.png" alt="Backspace key" width={20} height={20} className="h-full w-full p-2 object-contain" />
         </button>
       </div>
     </div>
