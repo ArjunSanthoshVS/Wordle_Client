@@ -1,19 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 
-const InputBoxes = ({ guesses, wordToGuess, currentGuess }) => {
-  const getBorderColor = (letter, index, guessIndex) => {
-    if (!wordToGuess || guessIndex >= guesses.length) return '';
-
-    if (wordToGuess[index] === letter) {
-      return 'border-emerald-500 text-white';
-    } else if (wordToGuess.includes(letter)) {
-      return 'border-amber-500 text-white';
-    } else {
-      return 'border-slate-600 text-white';
-    }
-  };
-
+const InputBoxes = ({ guesses, currentGuess }) => {
   const getAnimationDelay = (index) => {
     return `${index * 0.1}s`;
   };
@@ -24,7 +12,8 @@ const InputBoxes = ({ guesses, wordToGuess, currentGuess }) => {
         {Array.from({ length: 6 }).map((_, guessIndex) => (
           <div key={guessIndex} className="flex justify-center gap-1 sm:gap-2">
             {Array.from({ length: 5 }).map((_, index) => {
-              const letter = guesses[guessIndex]?.[index] || (guessIndex === guesses.length ? currentGuess[index] : '');
+              const letter = guesses[guessIndex]?.guess?.[index] || (guessIndex === guesses.length ? currentGuess[index] : '');
+              const status = guesses[guessIndex]?.statuses?.[index];
               const isCurrentGuessLetter = guessIndex === guesses.length && currentGuess[index];
               const isRevealed = guessIndex < guesses.length;
               const isCurrentRow = guessIndex === guesses.length;
@@ -38,7 +27,6 @@ const InputBoxes = ({ guesses, wordToGuess, currentGuess }) => {
                     isCurrentGuessLetter && 'border-blue-400 bg-blue-500/20 scale-105 animate-bounce-in',
                     letter && !isCurrentGuessLetter && 'scale-100',
                     !letter && 'scale-95',
-                    isRevealed && getBorderColor(letter, index, guessIndex),
                     isRevealed && 'animate-flip-in',
                     isCurrentRow && letter && 'animate-scale-in',
                     'hover:shadow-lg hover:shadow-blue-500/10',
@@ -51,22 +39,21 @@ const InputBoxes = ({ guesses, wordToGuess, currentGuess }) => {
                   <span className="relative z-10 aladin-regular text-xl sm:text-2xl md:text-3xl tracking-wider">
                     {letter}
                   </span>
-                  
+
                   {/* Glow effect for current letter */}
                   {isCurrentGuessLetter && (
                     <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-400/20 to-purple-400/20 animate-pulse-glow" />
                   )}
-                  
+
                   {/* Color indicators for letters */}
                   {isRevealed && letter && (
-                    <div 
-                      className={`absolute inset-0 rounded-xl ${
-                        wordToGuess[index] === letter 
-                          ? 'bg-emerald-600' 
-                          : wordToGuess.includes(letter)
-                            ? 'bg-amber-600'
-                            : 'bg-slate-700'
-                      }`}
+                    <div
+                      className={`absolute inset-0 rounded-xl ${status === 'correct'
+                        ? 'bg-emerald-600'
+                        : status === 'present'
+                          ? 'bg-amber-600'
+                          : 'bg-slate-700'
+                        }`}
                     />
                   )}
                 </div>

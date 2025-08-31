@@ -95,6 +95,7 @@ export default function Home() {
     }
   }, [currentGuess.length]);
 
+  // Inside handleEnter
   const handleEnter = useCallback(async () => {
     if (currentGuess.length !== 5) {
       showTemporaryNotification('Word must be 5 letters!', 'error');
@@ -102,7 +103,6 @@ export default function Home() {
     }
 
     try {
-      // First check if it's a valid English word using dictionary API
       const response = await fetch(`/api/word?word=${currentGuess}`);
       const data = await response.json();
 
@@ -111,33 +111,49 @@ export default function Home() {
         return;
       }
 
-      // Word is valid in English dictionary
-      const updatedGuesses = [...guesses, currentGuess];
-      setGuesses(updatedGuesses);
+      const guess = currentGuess.toUpperCase().split('');
+      const target = wordToGuess.toUpperCase().split('');
+      const statuses = Array(5).fill('absent');
+      const targetUsed = Array(5).fill(false);
 
-      // Inside handleEnter, after confirming it's a valid word
-      const newUsedLetters = { ...usedLetters };
+      // Pass 1: Mark correct (green)
+      for (let i = 0; i < 5; i++) {
+        if (guess[i] === target[i]) {
+          statuses[i] = 'correct';
+          targetUsed[i] = true;
+        }
+      }
 
-      for (let i = 0; i < currentGuess.length; i++) {
-        const letter = currentGuess[i];
-        const correctLetter = wordToGuess[i];
+      // Pass 2: Mark present (yellow)
+      for (let i = 0; i < 5; i++) {
+        if (statuses[i] === 'correct') continue;
 
-        if (letter === correctLetter) {
-          newUsedLetters[letter] = 'correct'; // exact match
-        } else if (wordToGuess.includes(letter)) {
-          // Only upgrade status if not already 'correct'
-          if (newUsedLetters[letter] !== 'correct') {
-            newUsedLetters[letter] = 'present'; // in word but wrong place
-          }
-        } else {
-          // Only mark as absent if not already marked
-          if (!newUsedLetters[letter]) {
-            newUsedLetters[letter] = 'absent';
+        for (let j = 0; j < 5; j++) {
+          if (!targetUsed[j] && guess[i] === target[j]) {
+            statuses[i] = 'present';
+            targetUsed[j] = true;
+            break;
           }
         }
       }
 
+      // Update used letters for keyboard coloring
+      const newUsedLetters = { ...usedLetters };
+      for (let i = 0; i < 5; i++) {
+        const letter = guess[i];
+        const status = statuses[i];
+
+        if (status === 'correct') {
+          newUsedLetters[letter] = 'correct';
+        } else if (status === 'present' && newUsedLetters[letter] !== 'correct') {
+          newUsedLetters[letter] = 'present';
+        } else if (status === 'absent' && !newUsedLetters[letter]) {
+          newUsedLetters[letter] = 'absent';
+        }
+      }
+
       setUsedLetters(newUsedLetters);
+      setGuesses(prev => [...prev, { guess: currentGuess, statuses }]);
 
       if (currentGuess === wordToGuess) {
         setGameStatus('won');
@@ -146,7 +162,7 @@ export default function Home() {
           gamesPlayed: stats.gamesPlayed + 1,
           gamesWon: stats.gamesWon + 1,
           currentStreak: stats.currentStreak + 1,
-          bestStreak: Math.max(stats.bestStreak, stats.currentStreak + 1)
+          bestStreak: Math.max(stats.bestStreak, stats.currentStreak + 1),
         };
         saveStats(newStats);
         showTemporaryNotification(`🎉 Congratulations! You found the word!`, 'success');
@@ -155,19 +171,19 @@ export default function Home() {
         const newStats = {
           ...stats,
           gamesPlayed: stats.gamesPlayed + 1,
-          currentStreak: 0
+          currentStreak: 0,
         };
         saveStats(newStats);
         showTemporaryNotification(`Game Over! The word was "${wordToGuess}"`, 'error');
       }
 
       setCurrentGuess('');
-      setCurrentAttempt((prev) => prev + 1);
+      setCurrentAttempt(prev => prev + 1);
     } catch (error) {
       console.error('Error validating word:', error);
       showTemporaryNotification('Error validating word. Please try again.', 'error');
     }
-  }, [currentGuess, currentAttempt, guesses, wordToGuess, stats, showTemporaryNotification, saveStats]);
+  }, [currentGuess, currentAttempt, guesses, wordToGuess, stats, showTemporaryNotification, saveStats, usedLetters]);
 
   const handleDelete = useCallback(() => {
     setCurrentGuess((prev) => prev.slice(0, -1));
