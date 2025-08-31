@@ -18,6 +18,7 @@ export default function Home() {
   const [notificationMessage, setNotificationMessage] = useState('');
   const [notificationType, setNotificationType] = useState('info'); // 'success', 'error', 'info'
   const [isLoading, setIsLoading] = useState(true);
+  const [usedLetters, setUsedLetters] = useState({});
   const [stats, setStats] = useState({
     gamesPlayed: 0,
     gamesWon: 0,
@@ -113,6 +114,30 @@ export default function Home() {
       // Word is valid in English dictionary
       const updatedGuesses = [...guesses, currentGuess];
       setGuesses(updatedGuesses);
+
+      // Inside handleEnter, after confirming it's a valid word
+      const newUsedLetters = { ...usedLetters };
+
+      for (let i = 0; i < currentGuess.length; i++) {
+        const letter = currentGuess[i];
+        const correctLetter = wordToGuess[i];
+
+        if (letter === correctLetter) {
+          newUsedLetters[letter] = 'correct'; // exact match
+        } else if (wordToGuess.includes(letter)) {
+          // Only upgrade status if not already 'correct'
+          if (newUsedLetters[letter] !== 'correct') {
+            newUsedLetters[letter] = 'present'; // in word but wrong place
+          }
+        } else {
+          // Only mark as absent if not already marked
+          if (!newUsedLetters[letter]) {
+            newUsedLetters[letter] = 'absent';
+          }
+        }
+      }
+
+      setUsedLetters(newUsedLetters);
 
       if (currentGuess === wordToGuess) {
         setGameStatus('won');
@@ -247,6 +272,7 @@ export default function Home() {
                       onKeyPress={handleKeyPress}
                       onEnter={handleEnter}
                       onDelete={handleDelete}
+                      usedLetters={usedLetters}
                     />
                   </div>
                 ) : (
