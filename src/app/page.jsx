@@ -25,17 +25,17 @@ export default function Home() {
     bestStreak: 0
   });
 
-  useEffect(() => {
-    checkAndUpdateWord();
-    loadStats();
-  }, [checkAndUpdateWord]);
-
   const loadStats = () => {
     const savedStats = localStorage.getItem('wordpopStats');
     if (savedStats) {
       setStats(JSON.parse(savedStats));
     }
   };
+
+  useEffect(() => {
+    checkAndUpdateWord();
+    loadStats();
+  }, [checkAndUpdateWord]);
 
   const saveStats = useCallback((newStats) => {
     localStorage.setItem('wordpopStats', JSON.stringify(newStats));
@@ -120,7 +120,7 @@ export default function Home() {
     try {
       // First check if it's a valid English word using dictionary API
       const mockRequest = {
-        url: `http://localhost:3000/api/word?word=${currentGuess}`
+        url: `/api/word?word=${currentGuess}`
       };
 
       const response = await getWordDetails(mockRequest);
