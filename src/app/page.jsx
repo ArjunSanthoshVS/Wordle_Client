@@ -32,16 +32,6 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    checkAndUpdateWord();
-    loadStats();
-  }, [checkAndUpdateWord]);
-
-  const saveStats = useCallback((newStats) => {
-    localStorage.setItem('wordpopStats', JSON.stringify(newStats));
-    setStats(newStats);
-  }, []);
-
   const checkAndUpdateWord = useCallback(async () => {
     const cached = localStorage.getItem('wordpopData');
     const now = new Date().getTime();
@@ -62,6 +52,16 @@ export default function Home() {
     await selectNewWord();
   }, []);
 
+  useEffect(() => {
+    checkAndUpdateWord();
+    loadStats();
+  }, [checkAndUpdateWord]);
+
+  const saveStats = useCallback((newStats) => {
+    localStorage.setItem('wordpopStats', JSON.stringify(newStats));
+    setStats(newStats);
+  }, []);
+
   const selectNewWord = async () => {
     const words = wordsList.words;
 
@@ -80,23 +80,6 @@ export default function Home() {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (gameStatus !== 'playing') return;
-
-      const { key } = event;
-      if (key === 'Enter') {
-        handleEnter();
-      } else if (key === 'Backspace') {
-        handleDelete();
-      } else if (/^[a-zA-Z]$/.test(key) && currentGuess.length < 5) {
-        handleKeyPress(key.toUpperCase());
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentGuess, gameStatus, handleEnter, handleDelete, handleKeyPress]);
 
   const showTemporaryNotification = useCallback((message, type = 'info') => {
     setNotificationMessage(message);
@@ -119,11 +102,7 @@ export default function Home() {
 
     try {
       // First check if it's a valid English word using dictionary API
-      const mockRequest = {
-        url: `/api/word?word=${currentGuess}`
-      };
-
-      const response = await getWordDetails(mockRequest);
+      const response = await fetch(`/api/word?word=${currentGuess}`);
       const data = await response.json();
 
       if (!data.success) {
@@ -169,6 +148,24 @@ export default function Home() {
     setCurrentGuess((prev) => prev.slice(0, -1));
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (gameStatus !== 'playing') return;
+
+      const { key } = event;
+      if (key === 'Enter') {
+        handleEnter();
+      } else if (key === 'Backspace') {
+        handleDelete();
+      } else if (/^[a-zA-Z]$/.test(key) && currentGuess.length < 5) {
+        handleKeyPress(key.toUpperCase());
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentGuess, gameStatus, handleEnter, handleDelete, handleKeyPress]);
+
   const handleReset = () => {
     setGuesses([]);
     setCurrentGuess('');
@@ -180,7 +177,7 @@ export default function Home() {
 
   const getNotificationStyles = () => {
     const baseStyles = "fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl transition-all duration-500 backdrop-blur-sm max-w-[90vw] sm:max-w-md";
-    
+
     switch (notificationType) {
       case 'success':
         return `${baseStyles} bg-gradient-to-r from-emerald-500 to-green-500 text-white border border-emerald-400/30`;
@@ -195,7 +192,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%239C92AC&quot; fill-opacity=&quot;0.05&quot;%3E%3Ccircle cx=&quot;30&quot; cy=&quot;30&quot; r=&quot;2&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
-      
+
       {/* Header */}
       <header className="relative z-10 pt-4 sm:pt-6 md:pt-8 pb-4 sm:pb-6">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
@@ -212,9 +209,8 @@ export default function Home() {
 
       {/* Notification */}
       <div
-        className={`${getNotificationStyles()} ${
-          showNotification ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
-        }`}
+        className={`${getNotificationStyles()} ${showNotification ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+          }`}
       >
         <div className="flex items-center gap-2 sm:gap-3">
           {notificationType === 'success' && <span className="text-xl sm:text-2xl">🎉</span>}
@@ -234,10 +230,10 @@ export default function Home() {
               {/* Left Column - Game Board */}
               <div className="flex flex-col items-center w-full">
                 <div className="w-full max-w-sm sm:max-w-md">
-                  <InputBoxes 
-                    guesses={guesses} 
-                    wordToGuess={wordToGuess} 
-                    currentGuess={currentGuess} 
+                  <InputBoxes
+                    guesses={guesses}
+                    wordToGuess={wordToGuess}
+                    currentGuess={currentGuess}
                   />
                 </div>
               </div>
@@ -247,10 +243,10 @@ export default function Home() {
                 {gameStatus === 'playing' ? (
                   /* Keyboard */
                   <div className="w-full max-w-lg sm:max-w-xl lg:max-w-2xl mx-auto animate-slide-up" style={{ animationDelay: '0.3s' }}>
-                    <Keyboard 
-                      onKeyPress={handleKeyPress} 
-                      onEnter={handleEnter} 
-                      onDelete={handleDelete} 
+                    <Keyboard
+                      onKeyPress={handleKeyPress}
+                      onEnter={handleEnter}
+                      onDelete={handleDelete}
                     />
                   </div>
                 ) : (
