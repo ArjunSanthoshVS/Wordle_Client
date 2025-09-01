@@ -47,7 +47,7 @@ const TutorialModal = ({ isOpen, onClose, onComplete }) => {
     {
       id: 'gray-explanation',
       title: 'Gray Letters ⚫',
-      content: 'Gray means the letter is not in the word at all. "S" and "T" in "STARE" are gray because they\'re not in "HEART".',
+      content: 'Gray means the letter is not in the word at all. "S" in "STARE" are gray because they\'re not in "HEART".',
       action: 'Next',
       demo: true
     },
