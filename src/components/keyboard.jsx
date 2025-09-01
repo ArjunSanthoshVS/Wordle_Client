@@ -21,19 +21,25 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {} }) => {
 
   return (
     <div className="w-full max-w-lg sm:max-w-xl lg:max-w-2xl mx-auto px-2 sm:px-4">
-      <div className="space-y-2 sm:space-y-3">
+      <div className="space-y-2 sm:space-y-3 mb-3">
         {rows.map((row, rowIndex) => (
           <div key={rowIndex} className="flex justify-center gap-1 sm:gap-2">
+            {/* ENTER button for row 3 - visible on sm+ */}
             {rowIndex === 2 && (
               <button
                 onClick={handleEnterClick}
-                className="flex items-center justify-center px-2 sm:px-3 md:px-4 h-10 sm:h-12 md:h-14 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 hover:from-blue-500 hover:to-blue-600 active:scale-95 shadow-lg hover:shadow-blue-500/25 border border-blue-500/20 aladin-regular"
+                className="hidden sm:flex items-center justify-center px-3 md:px-4 h-12 md:h-14 
+                  bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl 
+                  font-semibold text-sm transition-all duration-200 
+                  hover:from-blue-500 hover:to-blue-600 active:scale-95 
+                  shadow-lg hover:shadow-blue-500/25 border border-blue-500/20 
+                  aladin-regular"
               >
-                <span className="hidden sm:inline">ENTER</span>
-                <span className="sm:hidden">↵</span>
+                ENTER
               </button>
             )}
 
+            {/* Letter buttons */}
             {row.map((letter) => {
               const status = usedLetters[letter] || null;
 
@@ -65,26 +71,55 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {} }) => {
                   onClick={() => status !== 'absent' && onKeyPress(letter)}
                   disabled={status === 'absent'}
                   className={`flex items-center justify-center w-8 h-10 sm:w-10 sm:h-12 md:w-12 md:h-14 
-        ${bgClass} ${borderClass} ${textClass} ${hoverClass} 
-        rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg 
-        transition-all duration-200 active:scale-95 shadow-lg aladin-regular`}
+                    ${bgClass} ${borderClass} ${textClass} ${hoverClass} 
+                    rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg 
+                    transition-all duration-200 active:scale-95 shadow-lg aladin-regular`}
                 >
                   {letter}
                 </button>
               );
             })}
 
+            {/* DELETE button for row 3 - visible on sm+ */}
             {rowIndex === 2 && (
               <button
                 onClick={handleDeleteClick}
-                className="flex items-center justify-center px-2 sm:px-3 md:px-4 h-10 sm:h-12 md:h-14 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 hover:from-red-500 hover:to-red-600 active:scale-95 shadow-lg hover:shadow-red-500/25 border border-red-500/20 aladin-regular"
+                className="hidden sm:flex items-center justify-center px-3 md:px-4 h-12 md:h-14 
+                  bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl 
+                  font-semibold text-sm transition-all duration-200 
+                  hover:from-red-500 hover:to-red-600 active:scale-95 
+                  shadow-lg hover:shadow-red-500/25 border border-red-500/20 
+                  aladin-regular"
               >
-                <span className="hidden sm:inline">DELETE</span>
-                <span className="sm:hidden">⌫</span>
+                DELETE
               </button>
             )}
           </div>
         ))}
+      </div>
+
+      {/* Mobile-only ENTER + DELETE buttons */}
+      <div className="flex justify-center gap-4 sm:hidden mt-3">
+        <button
+          onClick={handleEnterClick}
+          className="flex-grow max-w-[140px] h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white 
+            rounded-xl font-bold text-base transition-all duration-200 
+            hover:from-blue-500 hover:to-blue-600 active:scale-95 
+            shadow-lg hover:shadow-blue-500/25 border border-blue-500/20 
+            aladin-regular"
+        >
+          ENTER
+        </button>
+        <button
+          onClick={handleDeleteClick}
+          className="flex-grow max-w-[140px] h-12 bg-gradient-to-r from-red-600 to-red-700 text-white 
+            rounded-xl font-bold text-base transition-all duration-200 
+            hover:from-red-500 hover:to-red-600 active:scale-95 
+            shadow-lg hover:shadow-red-500/25 border border-red-500/20 
+            aladin-regular"
+        >
+          DELETE
+        </button>
       </div>
 
       {/* Mobile-friendly instructions */}

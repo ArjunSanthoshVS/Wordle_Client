@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import InputBoxes from '../components/inputBoxes';
 import Keyboard from '../components/keyboard';
 import LoadingSpinner from '../components/loadingSpinner';
+import TutorialModal from '../components/TutorialModal';
+import TutorialTrigger from '../components/TutorialTrigger';
+import TutorialButton from '../components/TutorialButton';
 import wordsList from '../words.json';
 import { GET as getWordDetails } from './api/word/route';
 
@@ -25,11 +28,20 @@ export default function Home() {
     currentStreak: 0,
     bestStreak: 0
   });
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [showTutorialTrigger, setShowTutorialTrigger] = useState(false);
 
   const loadStats = () => {
     const savedStats = localStorage.getItem('wordpopStats');
     if (savedStats) {
       setStats(JSON.parse(savedStats));
+    }
+  };
+
+  const checkFirstTimeUser = () => {
+    const hasSeenTutorial = localStorage.getItem('wordpopTutorialSeen');
+    if (!hasSeenTutorial) {
+      setShowTutorialTrigger(true);
     }
   };
 
@@ -56,6 +68,7 @@ export default function Home() {
   useEffect(() => {
     checkAndUpdateWord();
     loadStats();
+    checkFirstTimeUser();
   }, [checkAndUpdateWord]);
 
   const saveStats = useCallback((newStats) => {
@@ -180,7 +193,6 @@ export default function Home() {
       setCurrentGuess('');
       setCurrentAttempt(prev => prev + 1);
     } catch (error) {
-      console.error('Error validating word:', error);
       showTemporaryNotification('Error validating word. Please try again.', 'error');
     }
   }, [currentGuess, currentAttempt, guesses, wordToGuess, stats, showTemporaryNotification, saveStats, usedLetters]);
@@ -208,12 +220,29 @@ export default function Home() {
   }, [currentGuess, gameStatus, handleEnter, handleDelete, handleKeyPress]);
 
   const handleReset = () => {
+    setUsedLetters({});
     setGuesses([]);
     setCurrentGuess('');
     setCurrentAttempt(0);
     setGameStatus('playing');
     setIsLoading(true);
     selectNewWord(); // Always select a new word instead of checking cache
+  };
+
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    setShowTutorialTrigger(false);
+    localStorage.setItem('wordpopTutorialSeen', 'true');
+  };
+
+  const handleStartTutorial = () => {
+    setShowTutorialTrigger(false);
+    setShowTutorial(true);
+  };
+
+  const handleSkipTutorial = () => {
+    setShowTutorialTrigger(false);
+    localStorage.setItem('wordpopTutorialSeen', 'true');
   };
 
   const getNotificationStyles = () => {
@@ -234,15 +263,48 @@ export default function Home() {
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%239C92AC&quot; fill-opacity=&quot;0.05&quot;%3E%3Ccircle cx=&quot;30&quot; cy=&quot;30&quot; r=&quot;2&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
 
+      {/* Tutorial Components */}
+      {showTutorialTrigger && (
+        <TutorialTrigger
+          onStartTutorial={handleStartTutorial}
+          onSkipTutorial={handleSkipTutorial}
+        />
+      )}
+      
+      {showTutorial && (
+        <TutorialModal
+          isOpen={showTutorial}
+          onClose={() => setShowTutorial(false)}
+          onComplete={handleTutorialComplete}
+        />
+      )}
+
+      {/* Tutorial Button for returning users */}
+      {!showTutorialTrigger && !showTutorial && gameStatus === 'playing' && (
+        <TutorialButton onClick={() => setShowTutorial(true)} />
+      )}
+
       {/* Header */}
-      <header className="relative z-10 pt-4 sm:pt-6 md:pt-8 pb-4 sm:pb-6">
+      <header className="relative z-10 pt-6 sm:pt-10 md:pt-14 pb-4 sm:pb-8">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
           <div className="text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl aladin-regular gradient-text mb-2 animate-slide-up">
+            {/* Main Title */}
+            <h1
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl aladin-regular 
+                   bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 
+                   bg-clip-text text-transparent drop-shadow-lg 
+                   animate-slide-up"
+            >
               WORDPOP
             </h1>
-            <p className="text-slate-400 text-sm sm:text-base md:text-lg aladin-regular animate-slide-up px-2" style={{ animationDelay: '0.1s' }}>
-              Guess the word in 6 attempts
+
+            {/* Subtitle */}
+            <p
+              className="text-slate-400 text-base sm:text-lg md:text-xl lg:text-2xl 
+                   aladin-regular mt-2 sm:mt-3 animate-fade-in"
+              style={{ animationDelay: '0.2s', animationFillMode: 'both' }}
+            >
+              🎯 Guess the word in 6 tries!
             </p>
           </div>
         </div>

@@ -31,6 +31,16 @@ A modern, gamified WordPop puzzle game built with Next.js and Tailwind CSS.
 - **Loading Animations**: Dual-ring spinner with pulsing center
 - **Notification Animations**: Slide-up notifications with different types (success, error, info)
 
+### 🎓 Interactive Tutorial System
+- **First-Time User Experience**: Welcome modal for new players
+- **Step-by-Step Tutorial**: Conversational guide through game mechanics
+- **Interactive Demo**: Live demonstration with example word "HEART"
+- **Visual Feedback**: Color-coded explanations for green, yellow, and gray letters
+- **Keyboard Tutorial**: Shows how keyboard colors change based on guesses
+- **Pro Tips**: Strategic advice for better gameplay
+- **Skip Option**: Users can skip tutorial and access it later
+- **Persistent State**: Remembers if user has seen tutorial
+
 ### 🎨 Design System
 - **Color Palette**: Modern dark theme with vibrant accents
 - **Typography**: Inter font family for better readability
@@ -74,7 +84,10 @@ frontend/
 │   ├── components/
 │   │   ├── inputBoxes.jsx      # Game board component
 │   │   ├── keyboard.jsx        # Virtual keyboard
-│   │   └── loadingSpinner.jsx  # Loading component
+│   │   ├── loadingSpinner.jsx  # Loading component
+│   │   ├── TutorialModal.jsx   # Interactive tutorial modal
+│   │   ├── TutorialTrigger.jsx # First-time user welcome
+│   │   └── TutorialButton.jsx  # Tutorial access button
 │   └── words.json              # Word list and meanings
 ├── tailwind.config.ts          # Tailwind configuration
 └── package.json
@@ -128,6 +141,21 @@ frontend/
 - Custom animated loading component
 - Dual-ring design with pulsing center
 - Configurable loading message
+
+#### TutorialModal
+- Interactive step-by-step tutorial
+- Live demonstration with example gameplay
+- Color-coded explanations for game mechanics
+- Progress indicator and navigation controls
+
+#### TutorialTrigger
+- Welcome modal for first-time users
+- Option to start tutorial or skip
+- Persistent state management
+
+#### TutorialButton
+- Floating tutorial access button
+- Available for returning users during gameplay
 
 ### State Management
 - **Game State**: Word, guesses, current attempt, game status
