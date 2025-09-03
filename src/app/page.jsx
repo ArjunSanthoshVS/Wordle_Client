@@ -8,7 +8,7 @@ import TutorialModal from '../components/TutorialModal';
 import TutorialTrigger from '../components/TutorialTrigger';
 import TutorialButton from '../components/TutorialButton';
 import wordsList from '../words.json';
-import { GET as getWordDetails } from './api/word/route';
+// Removed external dictionary API usage; validation uses local words.json
 
 export default function Home() {
   const [wordToGuess, setWordToGuess] = useState('');
@@ -22,6 +22,7 @@ export default function Home() {
   const [notificationType, setNotificationType] = useState('info'); // 'success', 'error', 'info'
   const [isLoading, setIsLoading] = useState(true);
   const [usedLetters, setUsedLetters] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [stats, setStats] = useState({
     gamesPlayed: 0,
     gamesWon: 0,
@@ -77,11 +78,12 @@ export default function Home() {
   }, []);
 
   const selectNewWord = async () => {
-    const words = wordsList.words;
+    const words = (wordsList.words || []).filter(w => (w || '').length === 5);
 
     // Get random word and its meaning
     const randomWord = words[Math.floor(Math.random() * words.length)].toUpperCase();
-    const meaning = wordsList.meanings[randomWord.toLowerCase()];
+    const lower = randomWord.toLowerCase();
+    const meaning = (wordsList.meanings?.[lower]) || (wordsList.meanings_extra?.[lower]) || '';
 
     // Cache the word with timestamp and meaning
     localStorage.setItem('wordpopData', JSON.stringify({
@@ -91,6 +93,7 @@ export default function Home() {
     }));
 
     setWordToGuess(randomWord);
+    setWordMeaning(meaning);
     setIsLoading(false);
   };
 
@@ -103,24 +106,29 @@ export default function Home() {
   }, []);
 
   const handleKeyPress = useCallback((letter) => {
+    if (isSubmitting || gameStatus !== 'playing') return;
     if (currentGuess.length < 5) {
       setCurrentGuess((prev) => prev + letter);
     }
-  }, [currentGuess.length]);
+  }, [currentGuess.length, isSubmitting, gameStatus]);
 
   // Inside handleEnter
   const handleEnter = useCallback(async () => {
+    if (isSubmitting || gameStatus !== 'playing') return;
+    setIsSubmitting(true);
     if (currentGuess.length !== 5) {
       showTemporaryNotification('Word must be 5 letters!', 'error');
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      const response = await fetch(`/api/word?word=${currentGuess}`);
-      const data = await response.json();
+      // Validate using local 5-letter words list instead of remote API
+      const isValid = (wordsList?.words || [])
+        .some(w => (w || '').length === 5 && w.toUpperCase() === currentGuess.toUpperCase());
 
-      if (!data.success) {
-        showTemporaryNotification(data.message || 'Not a valid English word!', 'error');
+      if (!isValid) {
+        showTemporaryNotification('Word not in our list. Try another.', 'error');
         return;
       }
 
@@ -194,16 +202,19 @@ export default function Home() {
       setCurrentAttempt(prev => prev + 1);
     } catch (error) {
       showTemporaryNotification('Error validating word. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [currentGuess, currentAttempt, guesses, wordToGuess, stats, showTemporaryNotification, saveStats, usedLetters]);
+  }, [currentGuess, currentAttempt, guesses, wordToGuess, stats, showTemporaryNotification, saveStats, usedLetters, isSubmitting, gameStatus]);
 
   const handleDelete = useCallback(() => {
+    if (isSubmitting || gameStatus !== 'playing') return;
     setCurrentGuess((prev) => prev.slice(0, -1));
-  }, []);
+  }, [isSubmitting, gameStatus]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (gameStatus !== 'playing') return;
+      if (gameStatus !== 'playing' || isSubmitting) return;
 
       const { key } = event;
       if (key === 'Enter') {
@@ -217,7 +228,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentGuess, gameStatus, handleEnter, handleDelete, handleKeyPress]);
+  }, [currentGuess, gameStatus, handleEnter, handleDelete, handleKeyPress, isSubmitting]);
 
   const handleReset = () => {
     setUsedLetters({});
@@ -270,7 +281,7 @@ export default function Home() {
           onSkipTutorial={handleSkipTutorial}
         />
       )}
-      
+
       {showTutorial && (
         <TutorialModal
           isOpen={showTutorial}
