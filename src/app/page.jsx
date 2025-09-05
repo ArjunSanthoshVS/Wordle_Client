@@ -105,6 +105,26 @@ export default function Home() {
     setTimeout(() => setShowNotification(false), 3000);
   }, []);
 
+  // Validate a word using dictionaryapi.dev
+  const validateWordWithDictionaryAPI = async (word) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    try {
+      const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word.toLowerCase())}`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeoutId);
+      if (res.ok) return true; // 200 -> valid word
+      if (res.status === 404) return false; // not found -> invalid
+      // For other status codes, treat as temporary failure
+      throw new Error(`Dictionary API error: ${res.status}`);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      // Network/timeout/API error – surface a friendly error to user upstream
+      throw err;
+    }
+  };
+
   const handleKeyPress = useCallback((letter) => {
     if (isSubmitting || gameStatus !== 'playing') return;
     if (currentGuess.length < 5) {
@@ -123,12 +143,10 @@ export default function Home() {
     }
 
     try {
-      // Validate using local 5-letter words list instead of remote API
-      const isValid = (wordsList?.words || [])
-        .some(w => (w || '').length === 5 && w.toUpperCase() === currentGuess.toUpperCase());
-
+      // Validate using dictionary API
+      const isValid = await validateWordWithDictionaryAPI(currentGuess);
       if (!isValid) {
-        showTemporaryNotification('Word not in our list. Try another.', 'error');
+        showTemporaryNotification('Not a valid English word.', 'error');
         return;
       }
 
@@ -201,7 +219,7 @@ export default function Home() {
       setCurrentGuess('');
       setCurrentAttempt(prev => prev + 1);
     } catch (error) {
-      showTemporaryNotification('Error validating word. Please try again.', 'error');
+      showTemporaryNotification('Validation service unavailable. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -362,6 +380,7 @@ export default function Home() {
                       onEnter={handleEnter}
                       onDelete={handleDelete}
                       usedLetters={usedLetters}
+                      isSubmitting={isSubmitting}
                     />
                   </div>
                 ) : (

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {} }) => {
+const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {}, isSubmitting = false }) => {
   const rows = [
     ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
     ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
@@ -12,7 +12,7 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {} }) => {
   };
 
   const handleEnterClick = () => {
-    onEnter();
+    if (!isSubmitting) onEnter();
   };
 
   const handleDeleteClick = () => {
@@ -28,14 +28,22 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {} }) => {
             {rowIndex === 2 && (
               <button
                 onClick={handleEnterClick}
-                className="hidden sm:flex items-center justify-center px-3 md:px-4 h-12 md:h-14 
+                disabled={isSubmitting}
+                className={`hidden sm:flex items-center justify-center px-3 md:px-4 h-12 md:h-14 
                   bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl 
                   font-semibold text-sm transition-all duration-200 
-                  hover:from-blue-500 hover:to-blue-600 active:scale-95 
+                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-blue-500 hover:to-blue-600 active:scale-95'} 
                   shadow-lg hover:shadow-blue-500/25 border border-blue-500/20 
-                  aladin-regular"
+                  aladin-regular`}
               >
-                ENTER
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Validating
+                  </span>
+                ) : (
+                  'ENTER'
+                )}
               </button>
             )}
 
@@ -68,8 +76,8 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {} }) => {
               return (
                 <button
                   key={letter}
-                  onClick={() => status !== 'absent' && onKeyPress(letter)}
-                  disabled={status === 'absent'}
+                  onClick={() => status !== 'absent' && !isSubmitting && onKeyPress(letter)}
+                  disabled={status === 'absent' || isSubmitting}
                   className={`flex items-center justify-center w-8 h-10 sm:w-10 sm:h-12 md:w-12 md:h-14 
                     ${bgClass} ${borderClass} ${textClass} ${hoverClass} 
                     rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg 
@@ -84,12 +92,13 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {} }) => {
             {rowIndex === 2 && (
               <button
                 onClick={handleDeleteClick}
-                className="hidden sm:flex items-center justify-center px-3 md:px-4 h-12 md:h-14 
+                disabled={isSubmitting}
+                className={`hidden sm:flex items-center justify-center px-3 md:px-4 h-12 md:h-14 
                   bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl 
                   font-semibold text-sm transition-all duration-200 
-                  hover:from-red-500 hover:to-red-600 active:scale-95 
+                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-red-500 hover:to-red-600 active:scale-95'} 
                   shadow-lg hover:shadow-red-500/25 border border-red-500/20 
-                  aladin-regular"
+                  aladin-regular`}
               >
                 DELETE
               </button>
@@ -102,21 +111,30 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {} }) => {
       <div className="flex justify-center gap-4 sm:hidden mt-3">
         <button
           onClick={handleEnterClick}
-          className="flex-grow max-w-[140px] h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white 
+          disabled={isSubmitting}
+          className={`flex-grow max-w-[140px] h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white 
             rounded-xl font-bold text-base transition-all duration-200 
-            hover:from-blue-500 hover:to-blue-600 active:scale-95 
+            ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-blue-500 hover:to-blue-600 active:scale-95'} 
             shadow-lg hover:shadow-blue-500/25 border border-blue-500/20 
-            aladin-regular"
+            aladin-regular`}
         >
-          ENTER
+          {isSubmitting ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              Validating
+            </span>
+          ) : (
+            'ENTER'
+          )}
         </button>
         <button
           onClick={handleDeleteClick}
-          className="flex-grow max-w-[140px] h-12 bg-gradient-to-r from-red-600 to-red-700 text-white 
+          disabled={isSubmitting}
+          className={`flex-grow max-w-[140px] h-12 bg-gradient-to-r from-red-600 to-red-700 text-white 
             rounded-xl font-bold text-base transition-all duration-200 
-            hover:from-red-500 hover:to-red-600 active:scale-95 
+            ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-red-500 hover:to-red-600 active:scale-95'} 
             shadow-lg hover:shadow-red-500/25 border border-red-500/20 
-            aladin-regular"
+            aladin-regular`}
         >
           DELETE
         </button>
