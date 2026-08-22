@@ -1,69 +1,81 @@
 import React from 'react';
 import clsx from 'clsx';
 
-const InputBoxes = ({ guesses, currentGuess }) => {
-  const getAnimationDelay = (index) => {
-    return `${index * 0.1}s`;
-  };
-
+const InputBoxes = ({ guesses = [], currentGuess = '', isShaking = false }) => {
   return (
-    <div className="w-full max-w-sm sm:max-w-md mx-auto">
-      <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-        {Array.from({ length: 6 }).map((_, guessIndex) => (
-          <div key={guessIndex} className="flex justify-center gap-1 sm:gap-2">
-            {Array.from({ length: 5 }).map((_, index) => {
-              const letter = guesses[guessIndex]?.guess?.[index] || (guessIndex === guesses.length ? currentGuess[index] : '');
-              const status = guesses[guessIndex]?.statuses?.[index];
-              const isCurrentGuessLetter = guessIndex === guesses.length && currentGuess[index];
-              const isRevealed = guessIndex < guesses.length;
-              const isCurrentRow = guessIndex === guesses.length;
+    <div className="w-full flex justify-center items-center select-none">
+      <div className={clsx("flex flex-col gap-1.5 sm:gap-2.5", isShaking && "animate-shake")}>
+        {Array.from({ length: 6 }).map((_, rowIndex) => {
+          const isCurrentRow = rowIndex === guesses.length;
+          const rowGuess = guesses[rowIndex]?.guess || (isCurrentRow ? currentGuess : '');
+          const rowStatuses = guesses[rowIndex]?.statuses;
+          const isRevealed = rowIndex < guesses.length;
 
-              return (
-                <div
-                  key={index}
-                  className={clsx(
-                    'relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-2 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold transition-all duration-300 ease-out',
-                    'bg-slate-800/50 border-slate-600 text-white',
-                    isCurrentGuessLetter && 'border-blue-400 bg-blue-500/20 scale-105 animate-bounce-in',
-                    letter && !isCurrentGuessLetter && 'scale-100',
-                    !letter && 'scale-95',
-                    isRevealed && 'animate-flip-in',
-                    isCurrentRow && letter && 'animate-scale-in',
-                    'hover:shadow-lg hover:shadow-blue-500/10',
-                    'backdrop-blur-sm'
-                  )}
-                  style={{
-                    animationDelay: isRevealed ? getAnimationDelay(index) : '0s'
-                  }}
-                >
-                  <span className="relative z-10 aladin-regular text-xl sm:text-2xl md:text-3xl tracking-wider">
-                    {letter}
-                  </span>
+          return (
+            <div key={rowIndex} className="flex justify-center gap-1.5 sm:gap-2.5">
+              {Array.from({ length: 5 }).map((_, colIndex) => {
+                const letter = rowGuess?.[colIndex] || '';
+                const status = rowStatuses?.[colIndex];
+                const isCurrentLetter = isCurrentRow && colIndex === currentGuess.length - 1 && letter;
+                const isNextEmpty = isCurrentRow && colIndex === currentGuess.length;
 
-                  {/* Glow effect for current letter */}
-                  {isCurrentGuessLetter && (
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-400/20 to-purple-400/20 animate-pulse-glow" />
-                  )}
+                // Color mappings
+                let tileBg = "bg-slate-800/40 border-slate-700/60 text-slate-100 shadow-inner";
+                let flipStyle = {};
 
-                  {/* Color indicators for letters */}
-                  {isRevealed && letter && (
-                    <div
-                      className={`absolute inset-0 rounded-xl ${status === 'correct'
-                        ? 'bg-emerald-600'
-                        : status === 'present'
-                          ? 'bg-amber-600'
-                          : 'bg-slate-700'
-                        }`}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ))}
+                if (isRevealed && status) {
+                  if (status === 'correct') {
+                    tileBg = "bg-gradient-to-b from-emerald-500 to-emerald-600 border-emerald-400/80 text-white shadow-lg shadow-emerald-500/20";
+                  } else if (status === 'present') {
+                    tileBg = "bg-gradient-to-b from-amber-500 to-amber-600 border-amber-400/80 text-white shadow-lg shadow-amber-500/20";
+                  } else {
+                    tileBg = "bg-slate-800/90 border-slate-700 text-slate-400";
+                  }
+                  flipStyle = {
+                    animation: `tileFlipIn 0.5s ease-in-out forwards`,
+                    animationDelay: `${colIndex * 120}ms`,
+                  };
+                } else if (letter) {
+                  tileBg = "bg-slate-800/80 border-slate-500 text-white shadow-md border-2";
+                }
+
+                return (
+                  <div
+                    key={colIndex}
+                    style={flipStyle}
+                    className={clsx(
+                      "relative flex items-center justify-center rounded-xl font-bold transition-all duration-150",
+                      // Scaled dimensions that fit small mobile (360px) to large desktop
+                      "w-[min(12.2vw,54px)] h-[min(12.2vw,54px)] sm:w-14 sm:h-14 md:w-15 md:h-15 lg:w-16 lg:h-16",
+                      "border-2",
+                      tileBg,
+                      isCurrentLetter && "border-sky-400/90 animate-tile-pop shadow-[0_0_12px_rgba(56,189,248,0.35)]",
+                      isNextEmpty && "border-slate-500/70",
+                    )}
+                  >
+                    <span
+                      className={clsx(
+                        "font-display text-xl sm:text-2xl md:text-3xl tracking-wide",
+                        isRevealed ? "text-white drop-shadow-sm" : "text-slate-100"
+                      )}
+                    >
+                      {letter}
+                    </span>
+                    
+                    {/* Top glass highlight reflection on revealed or filled tiles */}
+                    {(isRevealed || letter) && (
+                      <div className="pointer-events-none absolute inset-x-0 top-0 h-1/3 rounded-t-lg bg-gradient-to-b from-white/15 to-transparent" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
 
 export default InputBoxes;
+

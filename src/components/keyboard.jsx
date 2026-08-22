@@ -1,150 +1,130 @@
 import React from 'react';
+import clsx from 'clsx';
 
 const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {}, isSubmitting = false }) => {
-  const rows = [
-    ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
-    ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'],
-    ['Z', 'X', 'C', 'V', 'B', 'N', 'M']
-  ];
+  const row1 = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'];
+  const row2 = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'];
+  const row3 = ['Z', 'X', 'C', 'V', 'B', 'N', 'M'];
 
-  const handleKeyClick = (key) => {
-    onKeyPress(key);
-  };
-
-  const handleEnterClick = () => {
-    if (!isSubmitting) onEnter();
-  };
-
-  const handleDeleteClick = () => {
-    onDelete();
+  const getKeyStyle = (letter) => {
+    const status = usedLetters[letter];
+    if (status === 'correct') {
+      return "bg-gradient-to-b from-emerald-500 to-emerald-600 text-white border-emerald-400/50 shadow-[0_3px_0_0_#065f46] active:shadow-none";
+    }
+    if (status === 'present') {
+      return "bg-gradient-to-b from-amber-500 to-amber-600 text-white border-amber-400/50 shadow-[0_3px_0_0_#92400e] active:shadow-none";
+    }
+    if (status === 'absent') {
+      return "bg-slate-800 text-slate-500 border-slate-700/50 shadow-[0_2px_0_0_#0f172a] opacity-55 cursor-not-allowed";
+    }
+    return "bg-gradient-to-b from-slate-700/90 to-slate-800 text-slate-100 border-slate-600/40 hover:from-slate-600 hover:to-slate-700 shadow-[0_3px_0_0_#0f172a] active:shadow-none";
   };
 
   return (
-    <div className="w-full max-w-lg sm:max-w-xl lg:max-w-2xl mx-auto px-2 sm:px-4">
-      <div className="space-y-2 sm:space-y-3 mb-3">
-        {rows.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex justify-center gap-1 sm:gap-2">
-            {/* ENTER button for row 3 - visible on sm+ */}
-            {rowIndex === 2 && (
-              <button
-                onClick={handleEnterClick}
-                disabled={isSubmitting}
-                className={`hidden sm:flex items-center justify-center px-3 md:px-4 h-12 md:h-14 
-                  bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl 
-                  font-semibold text-sm transition-all duration-200 
-                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-blue-500 hover:to-blue-600 active:scale-95'} 
-                  shadow-lg hover:shadow-blue-500/25 border border-blue-500/20 
-                  aladin-regular`}
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                    Validating
-                  </span>
-                ) : (
-                  'ENTER'
-                )}
-              </button>
-            )}
-
-            {/* Letter buttons */}
-            {row.map((letter) => {
-              const status = usedLetters[letter] || null;
-
-              let bgClass = 'bg-gradient-to-br from-slate-700 to-slate-800';
-              let borderClass = 'border border-slate-600/20';
-              let hoverClass = 'hover:from-slate-600 hover:to-slate-700';
-              let textClass = 'text-white';
-
-              if (status === 'correct') {
-                bgClass = 'bg-green-600';
-                borderClass = 'border-green-500';
-                textClass = 'text-white';
-                hoverClass = '';
-              } else if (status === 'present') {
-                bgClass = 'bg-yellow-500';
-                borderClass = 'border-yellow-400';
-                textClass = 'text-white';
-                hoverClass = '';
-              } else if (status === 'absent') {
-                bgClass = 'bg-slate-500';
-                borderClass = 'border-slate-400';
-                textClass = 'text-white opacity-60';
-                hoverClass = '';
-              }
-
-              return (
-                <button
-                  key={letter}
-                  onClick={() => status !== 'absent' && !isSubmitting && onKeyPress(letter)}
-                  disabled={status === 'absent' || isSubmitting}
-                  className={`flex items-center justify-center w-8 h-10 sm:w-10 sm:h-12 md:w-12 md:h-14 
-                    ${bgClass} ${borderClass} ${textClass} ${hoverClass} 
-                    rounded-lg sm:rounded-xl font-bold text-sm sm:text-base md:text-lg 
-                    transition-all duration-200 active:scale-95 shadow-lg aladin-regular`}
-                >
-                  {letter}
-                </button>
-              );
-            })}
-
-            {/* DELETE button for row 3 - visible on sm+ */}
-            {rowIndex === 2 && (
-              <button
-                onClick={handleDeleteClick}
-                disabled={isSubmitting}
-                className={`hidden sm:flex items-center justify-center px-3 md:px-4 h-12 md:h-14 
-                  bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl 
-                  font-semibold text-sm transition-all duration-200 
-                  ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-red-500 hover:to-red-600 active:scale-95'} 
-                  shadow-lg hover:shadow-red-500/25 border border-red-500/20 
-                  aladin-regular`}
-              >
-                DELETE
-              </button>
-            )}
-          </div>
-        ))}
+    <div className="w-full max-w-lg lg:max-w-xl mx-auto px-1 sm:px-2 select-none flex flex-col gap-1.5 sm:gap-2">
+      {/* Row 1 */}
+      <div className="flex justify-center gap-1 sm:gap-1.5 w-full">
+        {row1.map((letter) => {
+          const status = usedLetters[letter];
+          return (
+            <button
+              key={letter}
+              type="button"
+              onClick={() => status !== 'absent' && !isSubmitting && onKeyPress(letter)}
+              disabled={status === 'absent' || isSubmitting}
+              className={clsx(
+                "key-cap flex-1 max-w-[42px] h-11 sm:h-12 md:h-13 rounded-lg sm:rounded-xl",
+                "font-semibold text-sm sm:text-base md:text-lg flex items-center justify-center border transition-all duration-75",
+                getKeyStyle(letter)
+              )}
+            >
+              {letter}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Mobile-only ENTER + DELETE buttons */}
-      <div className="flex justify-center gap-4 sm:hidden mt-3">
+      {/* Row 2 */}
+      <div className="flex justify-center gap-1 sm:gap-1.5 w-full px-[3%] sm:px-[4%]">
+        {row2.map((letter) => {
+          const status = usedLetters[letter];
+          return (
+            <button
+              key={letter}
+              type="button"
+              onClick={() => status !== 'absent' && !isSubmitting && onKeyPress(letter)}
+              disabled={status === 'absent' || isSubmitting}
+              className={clsx(
+                "key-cap flex-1 max-w-[42px] h-11 sm:h-12 md:h-13 rounded-lg sm:rounded-xl",
+                "font-semibold text-sm sm:text-base md:text-lg flex items-center justify-center border transition-all duration-75",
+                getKeyStyle(letter)
+              )}
+            >
+              {letter}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Row 3 with Enter and Delete */}
+      <div className="flex justify-center gap-1 sm:gap-1.5 w-full">
+        {/* Enter Key */}
         <button
-          onClick={handleEnterClick}
+          type="button"
+          onClick={() => !isSubmitting && onEnter()}
           disabled={isSubmitting}
-          className={`flex-grow max-w-[140px] h-12 bg-gradient-to-r from-blue-600 to-blue-700 text-white 
-            rounded-xl font-bold text-base transition-all duration-200 
-            ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-blue-500 hover:to-blue-600 active:scale-95'} 
-            shadow-lg hover:shadow-blue-500/25 border border-blue-500/20 
-            aladin-regular`}
+          className={clsx(
+            "key-cap flex-[1.4] max-w-[66px] sm:max-w-[76px] h-11 sm:h-12 md:h-13 rounded-lg sm:rounded-xl",
+            "bg-gradient-to-b from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500",
+            "text-white font-bold text-xs sm:text-sm md:text-base flex items-center justify-center",
+            "border border-indigo-400/40 shadow-[0_3px_0_0_#312e81] active:shadow-none transition-all duration-75",
+            isSubmitting && "opacity-70 cursor-wait"
+          )}
         >
           {isSubmitting ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              Validating
-            </span>
+            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
           ) : (
-            'ENTER'
+            <span>ENTER</span>
           )}
         </button>
-        <button
-          onClick={handleDeleteClick}
-          disabled={isSubmitting}
-          className={`flex-grow max-w-[140px] h-12 bg-gradient-to-r from-red-600 to-red-700 text-white 
-            rounded-xl font-bold text-base transition-all duration-200 
-            ${isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:from-red-500 hover:to-red-600 active:scale-95'} 
-            shadow-lg hover:shadow-red-500/25 border border-red-500/20 
-            aladin-regular`}
-        >
-          DELETE
-        </button>
-      </div>
 
-      {/* Mobile-friendly instructions */}
-      <div className="mt-4 sm:mt-6 text-center">
-        <p className="text-slate-400 text-xs sm:text-sm aladin-regular px-2">
-          💡 Use your keyboard or tap the buttons above
-        </p>
+        {/* Row 3 Letters */}
+        {row3.map((letter) => {
+          const status = usedLetters[letter];
+          return (
+            <button
+              key={letter}
+              type="button"
+              onClick={() => status !== 'absent' && !isSubmitting && onKeyPress(letter)}
+              disabled={status === 'absent' || isSubmitting}
+              className={clsx(
+                "key-cap flex-1 max-w-[42px] h-11 sm:h-12 md:h-13 rounded-lg sm:rounded-xl",
+                "font-semibold text-sm sm:text-base md:text-lg flex items-center justify-center border transition-all duration-75",
+                getKeyStyle(letter)
+              )}
+            >
+              {letter}
+            </button>
+          );
+        })}
+
+        {/* Backspace Key */}
+        <button
+          type="button"
+          onClick={() => !isSubmitting && onDelete()}
+          disabled={isSubmitting}
+          className={clsx(
+            "key-cap flex-[1.3] max-w-[62px] sm:max-w-[72px] h-11 sm:h-12 md:h-13 rounded-lg sm:rounded-xl",
+            "bg-gradient-to-b from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500",
+            "text-white font-bold text-sm sm:text-base flex items-center justify-center",
+            "border border-rose-400/40 shadow-[0_3px_0_0_#881337] active:shadow-none transition-all duration-75"
+          )}
+          title="Delete"
+        >
+          <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414A2 2 0 0110.828 5H20a2 2 0 012 2v10a2 2 0 01-2 2h-9.172a2 2 0 01-1.414-.586L3 12z" />
+          </svg>
+        </button>
       </div>
     </div>
   );
