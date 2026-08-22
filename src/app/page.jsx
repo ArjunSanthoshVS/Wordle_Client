@@ -21,7 +21,6 @@ export default function Home() {
   const [notificationType, setNotificationType] = useState('info'); // 'success', 'error', 'info'
   const [isLoading, setIsLoading] = useState(true);
   const [usedLetters, setUsedLetters] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [stats, setStats] = useState({
     gamesPlayed: 0,
@@ -125,14 +124,14 @@ export default function Home() {
   }, []);
 
   const handleKeyPress = useCallback((letter) => {
-    if (isSubmitting || gameStatus !== 'playing') return;
+    if (gameStatus !== 'playing') return;
     if (currentGuess.length < 5) {
       setCurrentGuess((prev) => prev + letter);
     }
-  }, [currentGuess.length, isSubmitting, gameStatus]);
+  }, [currentGuess.length, gameStatus]);
 
   const handleEnter = useCallback(() => {
-    if (isSubmitting || gameStatus !== 'playing') return;
+    if (gameStatus !== 'playing') return;
     
     if (currentGuess.length !== 5) {
       triggerShake();
@@ -193,17 +192,17 @@ export default function Home() {
       saveStats(newStats);
       showTemporaryNotification(`Game Over! The word was "${wordToGuess}"`, 'error');
     }
-  }, [currentGuess, currentAttempt, wordToGuess, stats, showTemporaryNotification, saveStats, usedLetters, isSubmitting, gameStatus, triggerShake]);
+  }, [currentGuess, currentAttempt, wordToGuess, stats, showTemporaryNotification, saveStats, usedLetters, gameStatus, triggerShake]);
 
 
   const handleDelete = useCallback(() => {
-    if (isSubmitting || gameStatus !== 'playing') return;
+    if (gameStatus !== 'playing') return;
     setCurrentGuess((prev) => prev.slice(0, -1));
-  }, [isSubmitting, gameStatus]);
+  }, [gameStatus]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (gameStatus !== 'playing' || isSubmitting || showTutorial || showTutorialTrigger) return;
+      if (gameStatus !== 'playing' || showTutorial || showTutorialTrigger) return;
 
       const { key } = event;
       if (key === 'Enter') {
@@ -219,7 +218,7 @@ export default function Home() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentGuess, gameStatus, handleEnter, handleDelete, handleKeyPress, isSubmitting, showTutorial, showTutorialTrigger]);
+  }, [currentGuess, gameStatus, handleEnter, handleDelete, handleKeyPress, showTutorial, showTutorialTrigger]);
 
   const handleReset = () => {
     setUsedLetters({});
@@ -257,7 +256,7 @@ export default function Home() {
   const winRate = stats.gamesPlayed > 0 ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full game-bg flex flex-col justify-between overflow-hidden relative select-none">
+    <div className="h-[100dvh] max-h-[100dvh] w-screen overflow-hidden flex flex-col justify-between relative bg-game-board font-sans">
       {/* Background Subtle Ambient Glow */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-44 bg-sky-500/10 blur-3xl rounded-full" />
@@ -280,10 +279,10 @@ export default function Home() {
         />
       )}
 
-      {/* Toast Notification */}
+      {/* Toast Notification Banner */}
       {showNotification && (
-        <div className="fixed top-3 sm:top-4 left-1/2 -translate-x-1/2 z-50 animate-toast">
-          <div className="px-4 sm:px-5 py-2.5 rounded-full shadow-2xl backdrop-blur-xl border border-white/20 bg-slate-900/90 flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide">
+        <div className="fixed top-3 sm:top-5 left-1/2 transform -translate-x-1/2 z-50 animate-bounce-subtle pointer-events-none">
+          <div className="px-4 py-2 rounded-xl bg-slate-900/90 border border-white/10 shadow-2xl backdrop-blur-md flex items-center gap-2 text-xs sm:text-sm font-medium">
             {notificationType === 'success' && <span className="text-emerald-400">✨</span>}
             {notificationType === 'error' && <span className="text-rose-400">⚠️</span>}
             {notificationType === 'info' && <span className="text-sky-400">💡</span>}
@@ -358,7 +357,6 @@ export default function Home() {
                   onEnter={handleEnter}
                   onDelete={handleDelete}
                   usedLetters={usedLetters}
-                  isSubmitting={isSubmitting}
                 />
               ) : (
                 /* Result Card */
