@@ -10,6 +10,7 @@ const InputBoxes = ({ guesses = [], currentGuess = '', isShaking = false }) => {
           const rowGuess = guesses[rowIndex]?.guess || (isCurrentRow ? currentGuess : '');
           const rowStatuses = guesses[rowIndex]?.statuses;
           const isRevealed = rowIndex < guesses.length;
+          const isLatestRevealed = rowIndex === guesses.length - 1;
 
           return (
             <div key={rowIndex} className="flex justify-center gap-1.5 sm:gap-2.5">
@@ -31,10 +32,14 @@ const InputBoxes = ({ guesses = [], currentGuess = '', isShaking = false }) => {
                   } else {
                     tileBg = "bg-slate-800/90 border-slate-700 text-slate-400";
                   }
-                  flipStyle = {
-                    animation: `tileFlipIn 0.5s ease-in-out forwards`,
-                    animationDelay: `${colIndex * 120}ms`,
-                  };
+
+                  // Only animate the flip on the latest submitted row
+                  if (isLatestRevealed) {
+                    flipStyle = {
+                      animation: `tileFlipIn 0.45s ease-in-out forwards`,
+                      animationDelay: `${colIndex * 100}ms`,
+                    };
+                  }
                 } else if (letter) {
                   tileBg = "bg-slate-800/80 border-slate-500 text-white shadow-md border-2";
                 }
@@ -45,7 +50,6 @@ const InputBoxes = ({ guesses = [], currentGuess = '', isShaking = false }) => {
                     style={flipStyle}
                     className={clsx(
                       "relative flex items-center justify-center rounded-xl font-bold transition-all duration-150",
-                      // Scaled dimensions that fit small mobile (360px) to large desktop
                       "w-[min(12.2vw,54px)] h-[min(12.2vw,54px)] sm:w-14 sm:h-14 md:w-15 md:h-15 lg:w-16 lg:h-16",
                       "border-2",
                       tileBg,
@@ -77,5 +81,6 @@ const InputBoxes = ({ guesses = [], currentGuess = '', isShaking = false }) => {
   );
 };
 
-export default InputBoxes;
+export default React.memo(InputBoxes);
+
 

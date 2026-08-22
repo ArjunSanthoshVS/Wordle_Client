@@ -78,14 +78,10 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {}, isSubmittin
             "bg-gradient-to-b from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500",
             "text-white font-bold text-xs sm:text-sm md:text-base flex items-center justify-center",
             "border border-indigo-400/40 shadow-[0_3px_0_0_#312e81] active:shadow-none transition-all duration-75",
-            isSubmitting && "opacity-70 cursor-wait"
+            isSubmitting && "opacity-70"
           )}
         >
-          {isSubmitting ? (
-            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-          ) : (
-            <span>ENTER</span>
-          )}
+          <span>ENTER</span>
         </button>
 
         {/* Row 3 Letters */}
@@ -130,4 +126,4 @@ const Keyboard = ({ onKeyPress, onEnter, onDelete, usedLetters = {}, isSubmittin
   );
 };
 
-export default Keyboard;
+export default React.memo(Keyboard);
