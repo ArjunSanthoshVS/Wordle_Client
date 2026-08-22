@@ -150,18 +150,15 @@ export default function Home() {
     const upperGuess = currentGuess.toUpperCase();
     const statuses = computeWordStatuses(upperGuess, wordToGuess);
 
-    // Update keyboard used letter colors
+    // Update keyboard used letter colors with priority: correct > present > absent
+    const priority = { correct: 3, present: 2, absent: 1 };
     const newUsedLetters = { ...usedLetters };
     for (let i = 0; i < 5; i++) {
       const letter = upperGuess[i];
       const status = statuses[i];
-
-      if (status === 'correct') {
-        newUsedLetters[letter] = 'correct';
-      } else if (status === 'present' && newUsedLetters[letter] !== 'correct') {
-        newUsedLetters[letter] = 'present';
-      } else if (status === 'absent' && !newUsedLetters[letter]) {
-        newUsedLetters[letter] = 'absent';
+      const currentStatus = newUsedLetters[letter];
+      if (!currentStatus || (priority[status] || 0) > (priority[currentStatus] || 0)) {
+        newUsedLetters[letter] = status;
       }
     }
 
